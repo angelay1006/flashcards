@@ -2,13 +2,21 @@
 
 import Image from "next/image";
 import getStripe from '@/utils/get-stripe';
-import {SignedIn, SignedOut, UserButton} from '@clerk/nextjs';
+
 import {Container, Box, Grid, AppBar, Toolbar, Typography, Button} from '@mui/material';
 import Head from 'next/head';
+import Navbar from '../app/components/navbar';
  
 
 export default function Home() {
-
+  // page navigation
+  const pages = [
+    {name: 'Home', route: '/' },
+    {name: 'Flashcards', route: '/flashcards' },
+    {name: 'Create', route: '/create' },
+    {name: 'Pro', route: '/pro' },
+    {name: 'About', route: '/about' }
+  ]
   // for stripe
   const handleSubmit = async () => {
     const checkoutSession = await fetch('/api/checkout_session', {
@@ -44,18 +52,7 @@ export default function Home() {
       </Head>
 
       {/* navbar */}
-      <AppBar position="static">
-        <Toolbar>
-          <Typography variant="h6" style={{flexGrow: 1}} sx={{p:0}}> Flashcard SaaS </Typography>
-          <SignedOut>
-            <Button color="inherit" href="/sign-in"> Login </Button>
-            <Button color="inherit" href="/sign-up"> Sign Up </Button>
-          </SignedOut>
-          <SignedIn>
-            <UserButton />
-          </SignedIn>
-        </Toolbar>
-      </AppBar>
+      <Navbar pages={pages}/>
 
       {/* intro */}
       <Box sx={{textAlign:"center", my: 4}} >

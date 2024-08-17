@@ -7,6 +7,7 @@ import { db } from '@/firebase';
 import { useSearchParams } from 'next/navigation';
 import { Container, CardContent, CardActionArea, Dialog, DialogTitle, DialogActions, DialogContent, Button, Box, Typography, Paper, TextField, Grid, DialogContentText } from '@mui/material';
 
+
 export default function Flashcard() {
     const { isLoaded, isSignedIn, user } = useUser();
     const [flashcards, setFlashcards] = useState([]);
