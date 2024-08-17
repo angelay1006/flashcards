@@ -8,5 +8,7 @@
 
 body {
   overflow-x: hidden;
+  overflow-y: auto;
+  font-family: 'DM Sans', sans-serif;
 }
 

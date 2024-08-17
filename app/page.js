@@ -14,7 +14,7 @@ export default function Home() {
     {name: 'Home', route: '/' },
     {name: 'Flashcards', route: '/flashcards' },
     {name: 'Create', route: '/create' },
-    {name: 'Pro', route: '/pro' },
+    {name: 'Subscribe', route: '/pro' },
     {name: 'About', route: '/about' }
   ]
   // for stripe
@@ -45,7 +45,7 @@ export default function Home() {
   }
 
   return (
-    <Container maxWidth="100vw">
+    <Container maxWidth="100vw" sx={{margin:0}}>
       <Head>
         <title> Flashcard SaaS </title>
         <meta name="description" content="Create flashcards from your text"/>
