@@ -1,9 +1,10 @@
 // handles results of stripe call
 'use client'
-import {useEffect, useState} from 'react';
-import {useRouter, useSearchParams} from 'next/navigation';
-import {Container, Box, Grid, CircularProgress, Toolbar, Typography, Button} from '@mui/material';
+import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Container, Box, Grid, CircularProgress, Toolbar, Typography, Button } from '@mui/material';
 import getStripe from '../../utils/get-stripe';
+import Navbar from '../components/navbar';
 
 const ResultPage = () => {
     const router = useRouter();
@@ -35,51 +36,57 @@ const ResultPage = () => {
                 setLoading(false);
             }
         }
-        
+
         fetchCheckoutSession();
     }, [session_id])
 
     if (loading) {
         return (
-            <Container maxWidth="100vw" sx={{textAlign: 'center', mt: 4}}>
-                <CircularProgress/>
-                <Typography variant="h6"> Loading... </Typography>
-            </Container>
-        )
+            <>
+                <Navbar />
+                <Container maxWidth="100vw" sx={{textAlign: 'center', mt:{xs:8, sm:10}}}>
+                    <CircularProgress />
+                    <Typography variant="h6"> Loading... </Typography>
+                </Container>
+            </>
+        );
     }
 
     if (error) {
         return (
-            <Container maxWidth="100vw" sx={{textAlign: 'center', mt: 4}}>
-                <Typography variant="h6"> {error} </Typography>
-            </Container>
-        )
+            <>
+                <Navbar />
+                <Container maxWidth="100vw" sx={{textAlign: 'center', mt:{xs:8, sm:10}}}>
+                    <Typography variant="h6"> {error} </Typography>
+                </Container>
+            </>
+        );
     }
 
     return (
-        <Container maxWidth="100vw" sx={{textAlign: 'center', mt: 4}}>
-            {session.payment_status === "paid" ? (
-                <>
-                    <Typography variant="h4"> Thank you for your purchase. </Typography>
-                    <Box sx={{mt:2}}> 
-                        <Typography variant="h6"> Session ID: {session_id} </Typography>
-                        <Typography variant="body1"> We have received your payment. You will receive an email with the order details shortly. </Typography>
-                    </Box>
-                </>
-            ) : (
-                <>
+        <>
+            <Navbar />
+            <Container maxWidth="100vw" sx={{textAlign: 'center', mt:{xs:8, sm:12}}}>
+                {session.payment_status === "paid" ? (
                     <>
-                    <Typography variant="h4"> Payment failed. </Typography>
-                    <Box sx={{mt:2}}> 
-                        <Typography variant="body1"> Your payment was not successful. Please try again. </Typography>
-                    </Box>
-                </>
-                </>
-            )}
-        </Container>
-        
-    )
+                        <Typography variant="h4"> Thank you for your purchase. </Typography>
+                        <Box sx={{ mt: 2 }}>
+                            <Typography variant="h6"> Session ID: {session_id} </Typography>
+                            <Typography variant="body1"> We have received your payment. You will receive an email with the order details shortly. </Typography>
+                        </Box>
+                    </>
+                ) : (
+                    <>
+                        <Typography variant="h4"> Payment failed. </Typography>
+                        <Box sx={{ mt: 2 }}>
+                            <Typography variant="body1"> Your payment was not successful. Please try again. </Typography>
+                        </Box>
 
+                    </>
+                )}
+            </Container>
+        </>
+    )
 }
 
 export default ResultPage;

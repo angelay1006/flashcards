@@ -1,3 +1,5 @@
+'use client';
+
 import * as React from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -10,26 +12,51 @@ import Container from '@mui/material/Container';
 import Button from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
 import AdbIcon from '@mui/icons-material/Adb';
-import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs';
+import {SignedIn, SignedOut, UserButton} from '@clerk/nextjs';
 import Link from 'next/link';
 import '../globals.css';
+import {useUser } from '@clerk/nextjs';
+import {useRouter} from 'next/navigation';
+import { useNavbarPages } from '../hooks/useNavbarPages';
 
 
-
-function ResponsiveAppBar({ pages }) {
+function ResponsiveAppBar() {
     // for mobile view: state to manage opening & closing of menu
     const [anchorElNav, setAnchorElNav] = React.useState(null);
-
     const handleOpenNavMenu = (event) => {
         setAnchorElNav(event.currentTarget);
     };
-
     const handleCloseNavMenu = () => {
         setAnchorElNav(null);
     };
 
+    const pages = useNavbarPages();
+    const router = useRouter();
+
+    // for the subscribe button
+    const handleNavigation = (route) => {
+        if (route === 'pricing') {
+            if (router.pathname === '/') {
+                // If on the homepage, scroll to the pricing section
+                document.getElementById('pricing').scrollIntoView({behavior: 'smooth'});
+            } else {
+                // Otherwise, navigate to the homepage and then scroll to pricing
+                router.push('/#pricing');
+            }
+        } else {
+            router.push(route);
+        }
+    }
+
+    const handleMenuClick = (route) => {
+        handleCloseNavMenu();
+        handleNavigation(route);
+    }
+
+
+
     return (
-        <AppBar sx={{width: '100vw',  fontFamily: 'DM Sans, sans-serif'}}>
+        <AppBar position="fixed" sx={{width: '100vw', fontFamily: 'DM Sans, sans-serif'}}>
             <Container maxWidth={false}>
                 <Toolbar disableGutters sx={{ display: 'flex', justifyContent: {xs:'center', lg:'space-between'}, overflow: 'hidden' }}>
 
@@ -62,12 +89,13 @@ function ResponsiveAppBar({ pages }) {
                     {/* <Box sx={{flexGrow: 1, display: {xs:'flex', md: 'flex', lg: 'none'}}}> */}
                     <Box sx={{display: {xs: 'flex', md: 'none' }, flexGrow: 1, justifyContent: 'flex-start'}}>
                         <IconButton
-                            size="large"
+                            size="medium"
                             aria-label="account of current user"
                             aria-controls="menu-appbar"
                             aria-haspopup="true"
                             onClick={handleOpenNavMenu}
                             color="inherit"
+                            sx={{marginLeft: {xs:'0'}, }}
                         >
                             <MenuIcon />
                         </IconButton>
@@ -122,9 +150,9 @@ function ResponsiveAppBar({ pages }) {
                         {pages.map((page) => (
                             <Button
                                 key={page.name}
-                                onClick={handleCloseNavMenu}
+                                // for the subscribe button, we just want to link to the pricing section on homepage
+                                onClick={() => handleMenuClick(page.route)}
                                 sx={{my: 1.5, mx:2, color:'white', display:'block', textAlign:'center', fontFamily: 'DM Sans, sans-serif'}}
-                                href={page.route}
                             >
                                 {page.name}
                             </Button>
@@ -134,7 +162,7 @@ function ResponsiveAppBar({ pages }) {
                     {/* authentication buttons */}
                     <Box sx={{
                             paddingLeft: {xs:0.5}, 
-                            marginRight: {xs:0},
+                            marginRight: {xs:1.3},
                             flexGrow: 0, 
                             gap: {xs:0, md:3},
                             display: {xs: "flex"}, 
@@ -152,7 +180,7 @@ function ResponsiveAppBar({ pages }) {
                                 Login 
                             </Button>
                             <Button color="inherit" href="/sign-up" 
-                                sx={{ ml: 0, fontFamily: 'DM Sans, sans-serif',
+                                sx={{ml: 0, fontFamily: 'DM Sans, sans-serif',
                                       fontSize: {xs: '0.7rem', sm: '1rem', md: '0.9rem', lg: '0.9rem'},
                                       paddingLeft: {xs:'0,2rem'}
                                 }}

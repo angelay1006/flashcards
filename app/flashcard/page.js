@@ -1,20 +1,21 @@
 'use client'
 
-import { useUser } from '@clerk/nextjs';
-import { useEffect, useState } from 'react';
-import { collection, doc, getDocs, setDoc } from 'firebase/firestore';
-import { db } from '@/firebase';
-import { useSearchParams } from 'next/navigation';
-import { Container, CardContent, CardActionArea, Dialog, DialogTitle, DialogActions, DialogContent, Button, Box, Typography, Paper, TextField, Grid, DialogContentText } from '@mui/material';
-
+import {useUser} from '@clerk/nextjs';
+import {useEffect, useState } from 'react';
+import {collection, doc, getDoc, getDocs, writeBatch} from 'firebase/firestore';
+import {db} from '@/firebase';
+import {useSearchParams, useRouter} from 'next/navigation';
+import {Container, CardContent, CardActionArea, Button, Box, Typography, Grid} from '@mui/material';
+import Navbar from '../components/navbar.js';
 
 export default function Flashcard() {
-    const { isLoaded, isSignedIn, user } = useUser();
+    const {isLoaded, isSignedIn, user} = useUser();
     const [flashcards, setFlashcards] = useState([]);
     const [flipped, setFlipped] = useState([]);
 
     const searchParams = useSearchParams();
     const search = searchParams.get('id');
+    const router = useRouter();
 
     useEffect(() => {
         async function getFlashcard() {
@@ -44,9 +45,49 @@ export default function Flashcard() {
         return <></>
     }
 
+    const handleDeleteCollection = async () => {
+        if (!user || !search) return;
+
+        const confirmDelete = window.confirm("Are you sure you want to delete this collection? This action cannot be undone.");
+        if (!confirmDelete) return;
+
+        const batch = writeBatch(db);
+        const userDocRef = doc(collection(db, 'users'), user.id);
+        const colRef = collection(userDocRef, search);
+        const docs = await getDocs(colRef);
+
+        docs.forEach((doc) => {
+            batch.delete(doc.ref);
+        });
+
+        // delete collection from user's flashcards array
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists()) {
+            const userData = userDoc.data();
+            const updatedFlashcards = (userData.flashcards || []).filter(f => f.name !== search);
+            batch.update(userDocRef, {flashcards: updatedFlashcards});
+        }
+
+        try {
+            await batch.commit();
+            alert("Collection deleted successfully.");
+            router.push('/flashcards');
+        } catch (err) {
+            console.error("Error deleting collection:", err);
+            alert("Failed to delete collection. Please try again.");
+        }
+    }
+
     return (
-        <Container maxWidth="100vw">
-            <Grid container spacing={3} sx={{ mt: 4 }}>
+        <Container maxWidth="100vw" sx={{mb: 3}}>
+            <Navbar />
+            <Box sx={{ mt: { xs: 10, sm: 12 }, textAlign: 'center', justifyContent: 'center' }}>
+                <Typography gutterBottom variant="h3" sx={{ fontWeight: 500 }}>
+                    {search ? `My Collection Topic: ${search}` : 'Flashcards'}
+                </Typography>
+            </Box>
+
+            <Grid container spacing={3} >
                 {flashcards.map((flashcard, index) => (
                     <Grid item xs={12} sm={6} md={4} key={index}>
                         <CardActionArea onClick={() => { handleCardClick(index) }}>
@@ -60,7 +101,8 @@ export default function Flashcard() {
                                         width: '100%',
                                         height: '200px',
                                         boxShadow: '0 4px 8px 0 rgba(0,0,0,0.2)',
-                                        transform: flipped[index] ? 'rotateY(180deg)' : 'rotateY(0deg)'
+                                        transform: flipped[index] ? 'rotateY(180deg)' : 'rotateY(0deg)',
+                                        borderRadius: '16px'
                                     },
                                     '& > div > div': {
                                         position: 'absolute',
@@ -72,11 +114,12 @@ export default function Flashcard() {
                                         alignItems: 'center',
                                         padding: 2,
                                         boxSizing: 'border-box',
-                                        transform: 'rotateY(0deg)'
-
+                                        transform: 'rotateY(0deg)',
+                                        overflow: 'auto',
                                     },
                                     '& > div > div:nth-of-type(2)': {
-                                        transform: 'rotateY(180deg)'
+                                        transform: 'rotateY(180deg)',
+                                        overflow: 'auto',
                                     }
                                 }}
                                 >
@@ -85,7 +128,9 @@ export default function Flashcard() {
                                             <Typography variant="h5" component="div"> {flashcard.front} </Typography>
                                         </div>
                                         <div>
-                                            <Typography variant="h5" component="div"> {flashcard.back} </Typography>
+                                        <Typography variant="h5" component="div" sx={{maxHeight: '180px', overflowY: 'auto', padding: '10px'}}> 
+                                                {flashcard.back} 
+                                            </Typography>
                                         </div>
                                     </div>
                                 </Box>
@@ -94,6 +139,12 @@ export default function Flashcard() {
                     </Grid>
                 ))}
             </Grid>
+
+            <Box sx={{mt: 4, display: 'flex', justifyContent: 'center' }}>
+                <Button variant="contained" color="secondary" onClick={handleDeleteCollection}>
+                    Delete Collection
+                </Button>
+            </Box>
         </Container>
     )
 }

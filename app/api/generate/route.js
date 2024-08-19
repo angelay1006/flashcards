@@ -15,7 +15,7 @@ Follow these guidelines:
 8. Tailor the difficulty level of the flashcards to the user's specified preferences.
 9. If given a body of text, extract the most important and relevant information in the flashcards.
 10. Providing a spaced repetition system for more effective learning and retention.
-11. Only generate 10 flashcards.
+11. Only generate 12 flashcards.
 
 Return in the following JSON format:
 {

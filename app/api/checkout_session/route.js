@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
+import {getAuth} from '@clerk/nextjs/server';
+import {ClerkClient} from '@clerk/clerk-sdk-node';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
     apiVersion: '2022-11-15',
@@ -24,6 +26,10 @@ export async function GET(req) {
 
 }
 
+// 1. create stripe customerId for each user before creating checkout session
+// 2. use stripe webhooks to update user subscription status in clerk's metadata
+// 3. check subscription status in app
+
 export async function POST(req) {
     try {
         // Create Checkout Sessions from body params.
@@ -37,7 +43,7 @@ export async function POST(req) {
                         product_data: {
                             name: 'Pro Subscription',
                         },
-                        unit_amount: formatAmountForStripe(10),
+                        unit_amount: formatAmountForStripe(0.99),
                         recurring: {
                             interval: 'month',
                             interval_count: 1,
