@@ -15,7 +15,7 @@ import AdbIcon from '@mui/icons-material/Adb';
 import {SignedIn, SignedOut, UserButton} from '@clerk/nextjs';
 import Link from 'next/link';
 import '../globals.css';
-import {useUser } from '@clerk/nextjs';
+import {useUser} from '@clerk/nextjs';
 import {useRouter} from 'next/navigation';
 import { useNavbarPages } from '../hooks/useNavbarPages';
 
@@ -113,7 +113,7 @@ function ResponsiveAppBar() {
                         >
                             {/* create MenuItem for each page in mobile view */}
                             {pages.map((page) => (
-                                <MenuItem key={page.name} onClick={handleCloseNavMenu} sx={{justifyContent: 'flex-start'}}>
+                                <MenuItem key={page.name} onClick={() => handleMenuClick(page.route)} sx={{justifyContent: 'flex-start'}}>
                                     <Link href={page.route} passHref style={{textDecoration:'none'}}>
                                         <Button sx={{color:'black', width: '100%', justifyContent:'flex-start', fontFamily: 'DM Sans, sans-serif',}} onClick={handleCloseNavMenu}>
                                             {page.name}

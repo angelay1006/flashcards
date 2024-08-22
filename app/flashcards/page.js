@@ -7,24 +7,36 @@ import {useRouter } from 'next/navigation';
 import {Container, Divider, Typography, CardContent, Box, Grid, Card, CardActionArea } from '@mui/material';
 import Navbar from '../components/navbar.js';
 
+// for limiting basic users from generating more than 5 collections:
+export async function getFlashcardCollectionCount(userId) {
+    try {
+        const docRef = doc(collection(db, 'users'), userId);
+        const docSnap = await getDoc(docRef);
+    
+        if (docSnap.exists() && docSnap.data().flashcards) {
+            const collections = docSnap.data().flashcards || [];
+            return collections.length;
+        } else {
+            return 0;
+        }
+    } catch (err) {
+        console.error("Error getting flashcard collection count:", err);
+        return 0;
+    }
+}
+
 // gets user's doc from firestore and sets `flashcards` state with the user's collections
 export default function Flashcards() {
-    const { isLoaded, isSignedIn, user } = useUser();
+    const {isLoaded, isSignedIn, user} = useUser();
     const [flashcards, setFlashcards] = useState([]);
     const router = useRouter();
 
     useEffect(() => {
-        async function getFlashcards() {
-            if (!user) return
+        // ensure all are loaded before running to prevent hydration error
+        if (!isLoaded || !isSignedIn || !user) return;
 
+        async function getFlashcards() {
             const docRef = doc(collection(db, 'users'), user.id);
-            // const docSnap = await getDoc(docRef);
-            // if (docSnap.exists()) {
-            //     const collections = docSnap.data().flashcards || [];
-            //     setFlashcards(collections);
-            // } else {
-            //     await setDoc(docRef, { flashcards: [] });
-            // }
             const unsubscribe = onSnapshot(docRef, (docSnap) => {
                 if (docSnap.exists()) {
                     const collections = docSnap.data().flashcards || [];
@@ -36,15 +48,34 @@ export default function Flashcards() {
             return () => unsubscribe();
         }
         getFlashcards();
-    }, [user])
+    }, [isLoaded, isSignedIn, user])
 
     // don't want the page to load if the user isn't signed in
-    if (!isLoaded || !isSignedIn) {
-        return <></>
+    if (!isLoaded) {
+        return (
+            <Container>
+                <Navbar/>
+                <Typography>
+                    Loading...
+                </Typography>
+            </Container>
+        );
+    }
+
+    if (!isSignedIn) {
+        router.push('/sign-in');
+        return (
+            <Container>
+                <Navbar/>
+                <Typography>
+                    Redirecting to sign-in...
+                </Typography>
+            </Container>
+        );
     }
 
     const handleCardClick = (id) => {
-        router.push(`/flashcard?id=${id}`, { state: { onDelete: handleDeleteCollection } });
+        router.push(`/flashcard?id=${id}`, {state: {onDelete: handleDeleteCollection } });
     }
 
     const handleDeleteCollection = (deletedCollectionName) => {
@@ -52,7 +83,6 @@ export default function Flashcards() {
             prevFlashcards.filter((flashcard) => flashcard.name !== deletedCollectionName)
         );
     }
-
 
     // now to display all the flashcards
     return (

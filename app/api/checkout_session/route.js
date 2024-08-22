@@ -1,7 +1,6 @@
-import { NextResponse } from 'next/server';
+import {NextResponse} from 'next/server';
 import Stripe from 'stripe';
-import {getAuth} from '@clerk/nextjs/server';
-import {ClerkClient} from '@clerk/clerk-sdk-node';
+import {getAuth, clerkClient} from '@clerk/nextjs/server';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
     apiVersion: '2022-11-15',
@@ -21,7 +20,7 @@ export async function GET(req) {
         return NextResponse.json(checkoutSession);
     } catch (error) {
         console.error("Error retrieving checkout session:");
-        return NextResponse.json({error: {message: error.message}}, {status:500});
+        return NextResponse.json({ error: { message: error.message } }, { status: 500 });
     }
 
 }
@@ -32,9 +31,30 @@ export async function GET(req) {
 
 export async function POST(req) {
     try {
+        // 08/19/24: this is for authenticating whether user is pro or not
+        // get logged-in user's ID from Clerk
+        console.log("calling from POST handler in checkout session route.js");
+        const {userId} = getAuth(req);
+        const user = await clerkClient.users.getUser(userId); // retrieve user from clerk
+        let customerId = user.publicMetadata.stripeCustomerId;
+
+        // if user doesn't have customerId, create one
+        if (!customerId) {
+            const customer = await stripe.customers.create({
+                email: user.emailAddresses[0].emailAddress,
+            });
+
+            customerId = customer.id;
+
+            // save customerId in Clerk's user metadata
+            await clerkClient.users.updateUser(userId, {
+                publicMetadata: {stripeCustomerId: customerId },
+            });
+        }
+
         // Create Checkout Sessions from body params.
         const params = {
-            mode: 'subscription',
+            mode: 'payment', // changed from 'subscription'
             payment_method_types: ['card'],
             line_items: [
                 {
@@ -44,26 +64,25 @@ export async function POST(req) {
                             name: 'Pro Subscription',
                         },
                         unit_amount: formatAmountForStripe(0.99),
-                        recurring: {
-                            interval: 'month',
-                            interval_count: 1,
-                        }
+                        // recurring: {
+                        //     interval: 'month',
+                        //     interval_count: 1,
+                        // }
                     },
-
                     quantity: 1,
                 },
             ],
+            customer: customerId, // added 8/20 
             success_url: `${req.headers.get('origin')}/result?session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `${req.headers.get('origin')}/result?session_id={CHECKOUT_SESSION_ID}`,
+            metadata: {clerk_user_id: userId} // pass clerk user id as metadata
         };
 
         const checkoutSession = await stripe.checkout.sessions.create(params);
-
-        return NextResponse.json(checkoutSession, {
-            status: 200,
-        })
-
-    } catch (err) { 
-        console.error('Error creating checkout session:', err)
+        console.log("Checkout session:", checkoutSession);
+        return NextResponse.json({sessionId: checkoutSession.id}, {status: 200,});
+    } catch (err) {
+        console.error('Error creating checkout session:', err);
+        return NextResponse.json({error: {message: err.message}}, {status: 500});
     }
 }

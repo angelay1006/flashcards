@@ -1,32 +1,49 @@
 'use client'
 
-import { useUser } from '@clerk/nextjs';
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Container, CardContent, CardActionArea, Dialog, DialogTitle, DialogActions, DialogContent, Button, Box, Typography, Paper, TextField, Grid, DialogContentText } from '@mui/material';
-import { doc, getDoc, setDoc, collection, writeBatch } from 'firebase/firestore';
+import {useUser} from '@clerk/nextjs';
+import {useState, useEffect} from 'react';
+import {useRouter} from 'next/navigation';
+import {Container, CardContent, CardActionArea, Dialog, DialogTitle, DialogActions, DialogContent, Button, Box, Typography, Paper, TextField, Grid, DialogContentText } from '@mui/material';
+import {doc, getDoc, collection, writeBatch} from 'firebase/firestore';
 import LinearProgress from '@mui/material/LinearProgress';
-import { db } from '../../firebase';
+import {db} from '../../firebase';
 import Navbar from '../components/navbar.js';
-import { Savings } from '@mui/icons-material';
+import {getFlashcardCollectionCount} from '../flashcards/page';
 
 export default function Generate() {
-    const { isSignedIn, user } = useUser();
+    const {isSignedIn, user} = useUser();
     const [flashcards, setFlashcards] = useState([]);
     const [flipped, setFlipped] = useState([]);
     const [text, setText] = useState('');
     const [name, setName] = useState('');
     const [open, setOpen] = useState(false); // for modals
-
+    const router = useRouter();
     // for loading animation
     const [isLoading, setIsLoading] = useState(false);
+    // for distinguishing basic and pro
+    const [isLimitReached, setIsLimitReached] = useState(false);
+    const [collectionCount, setCollectionCount] = useState(0);
+    
 
-    const router = useRouter();
+    useEffect(() => {
+        const checkCollectionLimit = async () => {
+            if (user && user.publicMetadata && (user.publicMetadata.subscription?.status !== 'active' || user.publicMetadata.subscription?.plan !== 'pro')) {
+                const count = await getFlashcardCollectionCount(user.id);
+                setCollectionCount(count);
+                if (count >= 5) {
+                    setIsLimitReached(true);
+                }
+            }
+        };
+        checkCollectionLimit();
+    }, [user]);
+
+    
+
 
     // submits the text to generate flashcards. sends to API
     const handleSubmit = async () => {
         setIsLoading(true); // Start loading
-
         fetch('api/generate', {
             method: 'POST',
             body: text,
@@ -106,26 +123,33 @@ export default function Generate() {
     return (
         <Container maxWidth="md">
             <Navbar />
-            <Box sx={{ mt: { xs: 10, sm: 12 }, mb: 2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <Box sx={{mt: { xs: 10, sm: 12 }, mb: 2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <Typography variant="h3" gutterBottom sx={{ textAlign: 'center' }}> Generate Flashcards </Typography>
                 <Typography variant="body2" gutterBottom sx={{ mb: 3, color: 'gray', textAlign: 'center' }}> Qwizz will generate a set of 10 flashcards based on any information you enter</Typography>
                 <Paper variant="outlined" elevation={0} sx={{ p: 4, width: '100%', backgroundColor: '#F5F7FF', borderRadius: '20px' }}>
                     <TextField
                         value={text}
                         onChange={(e) => setText(e.target.value)}
-                        label="Enter topic or paste in your notes"
+                        label={isLimitReached ? "You have reached the 5-collection limit for basic users. To continue generating, please either purchase Pro or delete a collection.":"Enter topic or paste in your notes"}
                         fullWidth multiline
                         rows={4}
                         variant="outlined"
-                        sx={{ mb: 2, backgroundColor: 'white' }}
+                        sx={{mb: 2, backgroundColor: 'white'}}
+                        disabled={isLimitReached}
+                        InputLabelProps={{
+                            style: {
+                                whiteSpace: 'normal',
+                                wordWrap: 'break-word',
+                            }
+                        }}
                     />
-                    <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                    <Box sx={{display: 'flex', justifyContent: 'center'}}>
                         {isLoading ? (
                             <Box sx={{ width: '100%' }}>
                                 <LinearProgress />
                             </Box>
                         ) : (
-                            <Button variant="contained" color="primary" onClick={handleSubmit}>
+                            <Button variant="contained" color="primary" onClick={handleSubmit} disabled={isLimitReached}>
                                 Submit
                             </Button>
                         )}
@@ -134,12 +158,12 @@ export default function Generate() {
             </Box>
 
             {flashcards.length > 0 && (
-                <Box sx={{ mt: { xs: 8, sm: 8 }, mb: 2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <Typography variant="h4" sx={{ mb: 3 }} gutterBottom> Flashcards Preview </Typography>
+                <Box sx={{mt: {xs:8, sm:8}, mb:2, display:'flex', flexDirection:'column', alignItems:'center'}}>
+                    <Typography variant="h4" sx={{mb: 3}} gutterBottom> Flashcards Preview </Typography>
                     <Grid container spacing={3}>
                         {flashcards.map((flashcard, index) => (
                             <Grid item xs={12} sm={6} md={6} key={index}>
-                                <CardActionArea onClick={() => { handleCardClick(index) }}>
+                                <CardActionArea onClick={() => {handleCardClick(index) }}>
                                     <CardContent>
                                         <Box sx={{
                                             perspective: '1000px',
@@ -191,7 +215,7 @@ export default function Generate() {
                         ))}
                     </Grid>
 
-                    <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
+                    <Box sx={{mt:4, display:'flex', justifyContent:'center'}}>
                         <Button variant="contained" color="secondary" onClick={handleOpen}>
                             Save
                         </Button>

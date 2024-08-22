@@ -18,6 +18,7 @@ import hero_3 from './assets/hero_3.svg';
 import theme from './theme.js';
 
 
+
 export default function Home() {
   const router = useRouter();
   const {isSignedIn} = useUser();
@@ -39,29 +40,30 @@ export default function Home() {
 
   // for stripe
   const handleGetPro = async () => {
-    const checkoutSession = await fetch('/api/checkout_session', {
-      method: 'POST',
-      headers: {
-        origin: 'http://localhost:3000' // change later
-      },
-    });
+    try {
+      const response = await fetch('/api/checkout_session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'origin': 'http://localhost:3000', // change later
+        },
+      })
+      
+      if (!response.ok) {
+        const err = await response.json();
+        console.error("error creating stripe checkout session:", err)
+        return;
+      }
 
-    const checkoutSessionJSON = await checkoutSession.json();
+      const {sessionId} = await response.json();
+      const stripe = await getStripe();
+      await stripe.redirectToCheckout({sessionId});
 
-    if (checkoutSession.statusCode === 500) {
-      console.error(checkoutSession.message);
-      return;
-    }
-
-    const stripe = await getStripe();
-    const { error } = await stripe.redirectToCheckout({
-      sessionId: checkoutSessionJSON.id
-    });
-
-    if (error) {
-      console.warn(error.message);
+    } catch (err) {
+      console.error('Error creating Stripe checkout session', err);
     }
   }
+  
 
   return (
     <Container maxWidth="100%" sx={{ margin: 0, paddingTop: '10vh' }}>
@@ -212,7 +214,7 @@ export default function Home() {
               }}
             >
               <Typography variant="h5"> Pro </Typography>
-              <Typography variant="body1"> $0.99/month </Typography>
+              <Typography variant="body1"> $0.99/lifetime </Typography>
               <Typography>
                 {' '}
                 Unlimited storage, latest updates, and priority support.
