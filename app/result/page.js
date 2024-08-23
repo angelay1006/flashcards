@@ -18,6 +18,8 @@ const ResultPage = () => {
     useEffect(() => {
         const fetchCheckoutSession = async () => {
             if (!session_id) {
+                setError("Session ID not found.");
+                setLoading(false);
                 return;
             }
 

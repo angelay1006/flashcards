@@ -4,7 +4,7 @@ import {useEffect, useState} from 'react';
 import {collection, doc, getDoc, setDoc, onSnapshot} from 'firebase/firestore';
 import {db} from '../../firebase';
 import {useRouter } from 'next/navigation';
-import {Container, Divider, Typography, CardContent, Box, Grid, Card, CardActionArea } from '@mui/material';
+import {Container, Button, Divider, Typography, CardContent, Box, Grid, Card, CardActionArea } from '@mui/material';
 import Navbar from '../components/navbar.js';
 
 // for limiting basic users from generating more than 5 collections:
@@ -78,33 +78,54 @@ export default function Flashcards() {
         router.push(`/flashcard?id=${id}`, {state: {onDelete: handleDeleteCollection } });
     }
 
+    const handleGenerateFlashcards = () => {
+        router.push('/generate');
+    }
+
     const handleDeleteCollection = (deletedCollectionName) => {
         setFlashcards((prevFlashcards) => 
             prevFlashcards.filter((flashcard) => flashcard.name !== deletedCollectionName)
         );
     }
 
-    // now to display all the flashcards
+    // Now to display all the flashcards
     return (
-        <Container maxWidth="lg" sx={{mt: 15, mb:5}} height="100%">
+        <Container maxWidth="lg" sx={{mt: 15, mb: 5}} height="100%">
             <Navbar />
-            <Typography variant="h3" gutterBottom style={{fontFamily: 'Poppins, sans-serif', fontWeight: 500}}> My Flashcard Collection </Typography>
-            
-            <Grid container spacing={3} sx={{mt: 3}}>
-                {flashcards.map((flashcard, index) => (
-                    <Grid item xs={12} sm={6} md={4} key={index}>
-                        <Card sx={{borderRadius:'2', bgcolor: 'background.paper', boxshadow:1, padding:2, height:'100%'}}>
-                            <CardActionArea onClick={() => handleCardClick(flashcard.name)}>
-                                <CardContent sx={{ml:'1vw'}}>
-                                    <Typography variant="h6" style={{fontFamily: 'Poppins, sans-serif'}}>
-                                        {flashcard.name}
-                                    </Typography>
-                                </CardContent>
-                            </CardActionArea>
-                        </Card>
-                    </Grid>)
-                )}
-            </Grid>
+            <Typography variant="h3" gutterBottom style={{fontFamily: 'Poppins, sans-serif', fontWeight: 500 }}>
+                My Flashcard Collection
+            </Typography>
+
+            {flashcards.length === 0 ? (
+                <Box sx={{mt: 5}}>
+                    <Typography variant="h5" color="gray" gutterBottom>
+                        You have no flashcard collections yet.
+                        Start by generating your first set of flashcards!
+                    </Typography>
+                    <Box sx={{display: 'flex', alignItems:'center', justifyContent:'center', mt:5}}>
+                        <Button variant="contained" size="large" color="primary" onClick={handleGenerateFlashcards}>
+                            Generate Flashcards
+                        </Button>
+                    </Box>
+                    
+                </Box>
+            ) : (
+                <Grid container spacing={3} sx={{ mt: 3 }}>
+                    {flashcards.map((flashcard, index) => (
+                        <Grid item xs={12} sm={6} md={4} key={index}>
+                            <Card sx={{ borderRadius: '2', bgcolor: 'background.paper', boxShadow: 1, padding: 2, height: '100%' }}>
+                                <CardActionArea onClick={() => handleCardClick(flashcard.name)}>
+                                    <CardContent sx={{ ml: '1vw' }}>
+                                        <Typography variant="h6" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                                            {flashcard.name}
+                                        </Typography>
+                                    </CardContent>
+                                </CardActionArea>
+                            </Card>
+                        </Grid>
+                    ))}
+                </Grid>
+            )}
         </Container>
     );
 }

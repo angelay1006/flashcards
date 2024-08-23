@@ -35,7 +35,8 @@ export async function POST(req) {
         // get logged-in user's ID from Clerk
         console.log("calling from POST handler in checkout session route.js");
         const {userId} = getAuth(req);
-        const user = await clerkClient.users.getUser(userId); // retrieve user from clerk
+        const clerk = clerkClient();
+        const user = await clerk.users.getUser(userId); // retrieve user from clerk
         let customerId = user.publicMetadata.stripeCustomerId;
 
         // if user doesn't have customerId, create one
@@ -47,7 +48,7 @@ export async function POST(req) {
             customerId = customer.id;
 
             // save customerId in Clerk's user metadata
-            await clerkClient.users.updateUser(userId, {
+            await clerk.users.updateUser(userId, {
                 publicMetadata: {stripeCustomerId: customerId },
             });
         }
@@ -61,7 +62,7 @@ export async function POST(req) {
                     price_data: {
                         currency: 'usd',
                         product_data: {
-                            name: 'Pro Subscription',
+                            name: 'Pro User',
                         },
                         unit_amount: formatAmountForStripe(0.99),
                         // recurring: {

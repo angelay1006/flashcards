@@ -1,24 +1,32 @@
 // route that handles stripe webhook events
 // here is where we update user's subscription status in clerk
-import { buffer } from 'micro';
+
+// HUGE ISSUE 8/22/24: this route doesn't work! keeps returning 404 in postman 
+// in testing. so i'm going to try an alternative solution where i put the webhook in /pages instead of /app
+
 import Stripe from 'stripe';
-import { ClerkClient } from '@clerk/clerk-sdk-node';
-import { NextResponse } from 'next/server';
+import {clerkClient} from '@clerk/clerk-sdk-node';
+import {NextResponse} from 'next/server';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
     apiVersion: '2022-11-15',
 });
 
+const clerk = clerkClient();
+
+// export async function POST() {
+//     return NextResponse.json({message: "Webhook Route is working"});
+// }
+
 export async function POST(req) {
     const signature = req.headers['stripe-signature'];
+    
     let event;
 
     try {
-        event = stripe.webhooks.constructEvent(
-            await buffer(req),
-            signature,
-            process.env.STRIPE_WEBHOOK_SECRET
-        );
+        const body = await req.text();
+        event = stripe.webhooks.constructEvent(body, signature, process.env.STRIPE_WEBHOOK_SECRET);
+        console.log("Webhook event type received:", event.type);
     } catch (err) {
         console.error("Webhook signature verification failed:", err.message);
         return NextResponse.json({ error: { message: "Invalid Stripe webhook signature" } }, { status: 400 });
@@ -36,20 +44,26 @@ export async function POST(req) {
         }
 
         try {
+            console.log("Updating Clerk user ID:", userId);
+            const user = await clerk.users.getUser(userId);
             // update user's subscription status in clerk
-            await ClerkClient.users.updateUser(userId, {
+            await clerk.users.updateUser(userId, {
                 publicMetadata: {
-                    subscription: {
-                        status: 'active',
-                        plan: 'pro',
-                    },
-                },
+                    ...user.publicMetadata,
+                    proUser: true,
+                    purchaseDate: new Date().toISOString(),
+                }
             });
-            console.log(`User ${userId} updated to Pro plan`);
+
+            console.log("Updated user metadata:", JSON.stringify(updatedUser.publicMetadata, null, 2));
         } catch (err) {
             console.error("Error updating user in Clerk:", err.message);
             return NextResponse.json({error: {message: "Failed to update user in Clerk"}}, {status:500});
         }
+    }
+
+    if (event.type === 'checkout.session.completed') {
+        console.log("checkout session completed:", event.data.object);
     }
 
     return NextResponse.json({received: true}, {status:200});

@@ -1,9 +1,10 @@
 import {AppBar, Box, Button, Container, Toolbar, Typography } from '@mui/material';
 import {SignUp, SignIn} from '@clerk/nextjs';
-import Link from 'next/link';
 import Navbar from '../../components/navbar';
 
 export default function SignUpPage() {
+    // useFacebookSDK(process.env.NEXT_PUBLIC_FACEBOOK_APP_ID);
+
     return (
         <Container maxWidth="100vw">
             <Navbar/>

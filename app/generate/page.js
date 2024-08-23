@@ -24,14 +24,19 @@ export default function Generate() {
     const [isLimitReached, setIsLimitReached] = useState(false);
     const [collectionCount, setCollectionCount] = useState(0);
     
-
     useEffect(() => {
         const checkCollectionLimit = async () => {
-            if (user && user.publicMetadata && (user.publicMetadata.subscription?.status !== 'active' || user.publicMetadata.subscription?.plan !== 'pro')) {
-                const count = await getFlashcardCollectionCount(user.id);
-                setCollectionCount(count);
-                if (count >= 5) {
-                    setIsLimitReached(true);
+            if (user) {
+                console.log("User public metadata:", user.publicMetadata);
+                if (user.publicMetadata?.proUser === true) {
+                    console.log("User is a pro user");
+                    setIsLimitReached(false);
+                    setCollectionCount(0);
+                } else {
+                    const count = await getFlashcardCollectionCount(user.id);
+                    console.log("User flashcard collection count:", count);
+                    setCollectionCount(count);
+                    setIsLimitReached(count >= 5);
                 }
             }
         };
