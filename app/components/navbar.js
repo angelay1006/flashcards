@@ -7,7 +7,8 @@ import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import Menu from '@mui/material/Menu';
-import MenuIcon from '@mui/icons-material/Menu';
+// import MenuIcon from '@mui/icons-material/Menu';
+import LogoIcon from '../../public/assets/logo.svg';
 import Container from '@mui/material/Container';
 import Button from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
@@ -17,7 +18,8 @@ import Link from 'next/link';
 import '../globals.css';
 import {useUser} from '@clerk/nextjs';
 import {useRouter} from 'next/navigation';
-import { useNavbarPages } from '../hooks/useNavbarPages';
+import {useNavbarPages} from '../hooks/useNavbarPages';
+
 
 
 function ResponsiveAppBar() {
@@ -58,7 +60,7 @@ function ResponsiveAppBar() {
     return (
         <AppBar position="fixed" sx={{width: '100vw', fontFamily: 'DM Sans, sans-serif'}}>
             <Container maxWidth={false}>
-                <Toolbar disableGutters sx={{ display: 'flex', justifyContent: {xs:'center', lg:'space-between'}, overflow: 'hidden' }}>
+                <Toolbar disableGutters sx={{display: 'flex', justifyContent: {xs:'center', lg:'space-between'}, overflow: 'hidden' }}>
 
                     {/* for larger screens */}
                     <Box display="flex" direction="column" alignItems="center" justifyContent="center">
@@ -97,7 +99,7 @@ function ResponsiveAppBar() {
                             color="inherit"
                             sx={{marginLeft: {xs:'0'}, }}
                         >
-                            <MenuIcon />
+                            <LogoIcon />
                         </IconButton>
 
                         {/* contains nav links for mobile view */}

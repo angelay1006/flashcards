@@ -2,26 +2,39 @@
 
 import getStripe from '@/utils/get-stripe';
 import Image from 'next/image';
-import { Container, Box, Grid, Typography, Button, Divider } from '@mui/material';
+import {Container, CircularProgress, Box, Grid, Typography, Button, Divider} from '@mui/material';
 import Head from 'next/head';
 import Navbar from '../app/components/navbar';
 import {useUser} from '@clerk/nextjs';
 import {useRouter} from 'next/navigation';
 import {SignedIn, SignedOut, UserButton, isSignedIn} from '@clerk/nextjs';
-import flashcards from './assets/flashcards.svg';
-import feature_1 from './assets/feature_1.svg';
-import feature_2 from './assets/feature_2.svg';
-import feature_3 from './assets/feature_3.svg';
-import hero_1 from './assets/hero_1.svg';
-import hero_2 from './assets/hero_2.svg';
-import hero_3 from './assets/hero_3.svg';
+import flashcards from '../public/assets/flashcards.svg';
+import feature_1 from '../public/assets/feature_1.svg';
+import feature_2 from '../public/assets/feature_2.svg';
+import feature_3 from '../public/assets/feature_3.svg';
+// import hero_1 from './assets/hero_1.svg';
+// import hero_2 from './assets/hero_2.svg';
+// import hero_3 from './assets/hero_3.svg';
 import theme from './theme.js';
 
 
 export default function Home() {
   const router = useRouter();
-  const {isSignedIn, user} = useUser();
-  const isProUser = user?.publicMetadata?.proUser;
+  const {isLoaded, isSignedIn, user} = useUser();
+  const isProUser = user?.publicMetadata?.proUser || false;
+
+  // Prevent rendering until user data is loaded, to prevent hydration errors
+  if (!isLoaded) {
+    return (
+      <>
+          <Navbar />
+          <Container maxWidth="100vw" sx={{textAlign: 'center', mt:{xs:8, sm:10}}}>
+              <CircularProgress />
+              <Typography variant="h6"> Loading... </Typography>
+          </Container>
+      </>
+  );
+  }
 
   // for get started button
   const handleGetStarted = () => {
@@ -80,7 +93,7 @@ export default function Home() {
         <Typography variant="h2" gutterBottom style={{fontFamily: 'Poppins, sans-serif', fontWeight: 500}}> Welcome to QwizzCards </Typography>
 
         <Box sx={{ my: 8 }}>
-          <Image src={flashcards} alt="flashcards landing image" style={{ width: '70%', height: 'auto' }} />
+          <Image src={flashcards} alt="flashcards landing image" style={{width: '70%', height: 'auto' }}/>
         </Box>
 
         <Typography variant="h6" gutterBottom sx={{ mt: 6 }} style={{ fontFamily: 'Poppins, sans-serif' }}> The easiest way to make flashcards from your text. </Typography>

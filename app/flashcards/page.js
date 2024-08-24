@@ -92,7 +92,7 @@ export default function Flashcards() {
     return (
         <Container maxWidth="lg" sx={{mt: 15, mb: 5}} height="100%">
             <Navbar />
-            <Typography variant="h3" gutterBottom style={{fontFamily: 'Poppins, sans-serif', fontWeight: 500 }}>
+            <Typography variant="h3" gutterBottom style={{fontFamily: 'Poppins, sans-serif', fontWeight: 500}}>
                 My Flashcard Collection
             </Typography>
 
