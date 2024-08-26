@@ -32,18 +32,18 @@ export default function About() {
                 </Grid>
                 {/* Right side: image */}
                 <Grid item xs={12} md={6} sx={{ padding: 0, margin: 0 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                    <Box sx={{display: 'flex', justifyContent: 'center'}}>
                         <Image src="/assets/about.svg" width={400} height={325} alt="work from home" />
                     </Box>
                 </Grid>
             </Grid>
 
-            <Grid container spacing={4} alignItems="center" sx={{ paddingLeft: 0 }}>
-                <Grid item xs={12} md={6} sx={{ paddingTop: 0 }}>
+            <Grid container spacing={4} alignItems="center" sx={{paddingLeft: 0}}>
+                <Grid item xs={12} md={6} sx={{paddingTop: 0}}>
                     <Typography variant="body2">
                         Credits for logo and images go to{' '}
                         <Link href="https://www.figma.com/@designvthsuhas" passHref>
-                            <a target="_blank" rel="noopener noreferrer" style={{textDecoration: 'none', color: 'inherit'}}>
+                            <a target="_blank" rel="noopener noreferrer" style={{textDecoration:'none', color: 'inherit'}}>
                                 Suhas Palukuri
                             </a>
                         </Link>{' '}

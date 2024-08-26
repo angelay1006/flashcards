@@ -7,7 +7,7 @@ import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import Menu from '@mui/material/Menu';
-// import MenuIcon from '@mui/icons-material/Menu';
+import MenuIcon from '@mui/icons-material/Menu';
 import LogoIcon from '../../public/assets/logo.svg';
 import Container from '@mui/material/Container';
 import Button from '@mui/material/Button';
@@ -99,7 +99,7 @@ function ResponsiveAppBar() {
                             color="inherit"
                             sx={{marginLeft: {xs:'0'}, }}
                         >
-                            <LogoIcon />
+                            <MenuIcon />
                         </IconButton>
 
                         {/* contains nav links for mobile view */}

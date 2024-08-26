@@ -2,13 +2,12 @@
 
 import getStripe from '@/utils/get-stripe';
 import Image from 'next/image';
-import {Container, CircularProgress, Box, Grid, Typography, Button, Divider} from '@mui/material';
+import {Container, CircularProgress, Box, Grid, Typography, Button, Divider } from '@mui/material';
 import Head from 'next/head';
 import Navbar from '../app/components/navbar';
 import {useUser} from '@clerk/nextjs';
 import {useRouter} from 'next/navigation';
-import {SignedIn, SignedOut, UserButton, isSignedIn} from '@clerk/nextjs';
-import flashcards from '../public/assets/flashcards.svg';
+import {SignedIn, SignedOut, UserButton, isSignedIn } from '@clerk/nextjs';
 import feature_1 from '../public/assets/feature_1.svg';
 import feature_2 from '../public/assets/feature_2.svg';
 import feature_3 from '../public/assets/feature_3.svg';
@@ -16,24 +15,25 @@ import feature_3 from '../public/assets/feature_3.svg';
 // import hero_2 from './assets/hero_2.svg';
 // import hero_3 from './assets/hero_3.svg';
 import theme from './theme.js';
+import dynamic from 'next/dynamic';
 
 
 export default function Home() {
   const router = useRouter();
-  const {isLoaded, isSignedIn, user} = useUser();
+  const { isLoaded, isSignedIn, user } = useUser();
   const isProUser = user?.publicMetadata?.proUser || false;
 
   // Prevent rendering until user data is loaded, to prevent hydration errors
   if (!isLoaded) {
     return (
       <>
-          <Navbar />
-          <Container maxWidth="100vw" sx={{textAlign: 'center', mt:{xs:8, sm:10}}}>
-              <CircularProgress />
-              <Typography variant="h6"> Loading... </Typography>
-          </Container>
+        <Navbar />
+        <Container maxWidth="100vw" sx={{textAlign: 'center', mt: {xs: 8, sm: 20}}}>
+          <CircularProgress />
+          <Typography variant="h6"> Loading... </Typography>
+        </Container>
       </>
-  );
+    );
   }
 
   // for get started button
@@ -61,22 +61,22 @@ export default function Home() {
           'origin': 'http://localhost:3000', // change later
         },
       })
-      
+
       if (!response.ok) {
         const err = await response.json();
         console.error("error creating stripe checkout session:", err)
         return;
       }
 
-      const {sessionId} = await response.json();
+      const { sessionId } = await response.json();
       const stripe = await getStripe();
-      await stripe.redirectToCheckout({sessionId});
+      await stripe.redirectToCheckout({ sessionId });
 
     } catch (err) {
       console.error('Error creating Stripe checkout session', err);
     }
   }
-  
+
 
   return (
     <Container maxWidth="100%" sx={{ margin: 0, paddingTop: '10vh' }}>
@@ -89,11 +89,14 @@ export default function Home() {
       <Navbar />
 
       {/* intro */}
-      <Box sx={{ textAlign: "center", my: 10 }}>
-        <Typography variant="h2" gutterBottom style={{fontFamily: 'Poppins, sans-serif', fontWeight: 500}}> Welcome to QwizzCards </Typography>
+      <Box sx={{textAlign: "center", my: 10}}>
+        <Typography variant="h2" gutterBottom style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500 }}> Welcome to QwizzCards </Typography>
 
-        <Box sx={{ my: 8 }}>
-          <Image src={flashcards} alt="flashcards landing image" style={{width: '70%', height: 'auto' }}/>
+        <Box sx={{my: 8}}>
+          <Image src="/assets/flashcards.svg" alt="flashcards landing image" width={50} height={50} style={{
+            width: '75%',
+            height: 'auto',
+          }} />
         </Box>
 
         <Typography variant="h6" gutterBottom sx={{ mt: 6 }} style={{ fontFamily: 'Poppins, sans-serif' }}> The easiest way to make flashcards from your text. </Typography>
@@ -106,7 +109,7 @@ export default function Home() {
 
       {/* feature showcase */}
       <Box sx={{ my: 6, textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-        <Typography variant="h3" gutterBottom sx={{ mb: 6 }} style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 500 }}>
+        <Typography variant="h3" gutterBottom sx={{mb: 6}} style={{fontFamily: 'Montserrat, sans-serif', fontWeight: 500 }}>
           Features
         </Typography>
         <Grid container spacing={5} width="95%" justifyContent='center'>
@@ -121,8 +124,8 @@ export default function Home() {
               boxShadow: 'none',
             }}>
               <Typography variant="h6" gutterBottom> Easy Text Input </Typography>
-              <Box sx={{display: 'flex', justifyContent: 'center', my: 4}}>
-                <Image src={feature_1} alt="feature 1 pic" style={{ width: '70%', height: '30vh', objectFit: 'contain' }} />
+              <Box sx={{display: 'flex', justifyContent: 'center', my: 4 }}>
+                <Image src="/assets/feature_1.svg" alt="feature 1 pic" width={100} height={100} style={{width: '70%', height: 'auto', objectFit: 'contain'}}/>
               </Box>
               <Typography variant="body2">
                 {' '}
@@ -142,8 +145,8 @@ export default function Home() {
               borderColor: theme.palette.primary.main,
             }}>
               <Typography variant="h6" gutterBottom> Smart Flashcards </Typography>
-              <Box sx={{display: 'flex', justifyContent: 'center', my: 4 }}>
-                <Image src={feature_2} alt="feature 2 pic" style={{ width: '70%', height: '30vh', objectFit: 'contain' }} />
+              <Box sx={{display: 'flex', justifyContent: 'center', my: 4}}>
+                <Image src="/assets/feature_2.svg" alt="feature 2 pic" width={100} height={100} style={{width: '70%', height: 'auto', objectFit: 'contain'}}/>
               </Box>
               <Typography variant="body2">
                 {' '}
@@ -162,8 +165,8 @@ export default function Home() {
               borderColor: theme.palette.primary.main,
             }}>
               <Typography variant="h6" gutterBottom> Accessible Anywhere </Typography>
-              <Box sx={{display: 'flex', justifyContent: 'center', my: 4}}>
-                <Image src={feature_3} alt="feature 3 pic" style={{ width: '70%', height: '30vh', objectFit: 'contain' }} />
+              <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+                <Image src="/assets/feature_3.svg" alt="feature 3 pic" width={100} height={100} style={{width: '70%', height: 'auto', objectFit: 'contain'}}/>
               </Box>
               <Typography variant="body2">
                 {' '}
@@ -176,13 +179,13 @@ export default function Home() {
       <Divider />
 
       {/* pricing */}
-      <Box id="pricing" sx={{my: 6, display: 'flex', flexDirection: 'column', textAlign: 'center', justifyContent: 'center' }}>
-        <Typography variant="h3" gutterBottom sx={{mb:5}} style={{fontFamily: 'Poppins, sans-serif', fontWeight: 500}}>
+      <Box id="pricing" sx={{ my: 6, display: 'flex', flexDirection: 'column', textAlign: 'center', justifyContent: 'center' }}>
+        <Typography variant="h3" gutterBottom sx={{ mb: 5 }} style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500 }}>
           Pricing
         </Typography>
 
         <Grid container spacing={0} justifyContent="center" alignItems="stretch">
-          <Grid item xs={12} md={5.5} sx={{display:'flex', justifyContent:'center'}}>
+          <Grid item xs={12} md={5.5} sx={{ display: 'flex', justifyContent: 'center' }}>
             <Box
               spacing={3}
               sx={{
@@ -201,19 +204,19 @@ export default function Home() {
                 {' '}
                 Access to basic flashcard features and limited storage.
               </Typography>
-              <Button 
+              <Button
                 variant="contained"
                 color="primary"
-                sx={{mt: 2}}
+                sx={{ mt: 2 }}
                 disabled={isSignedIn}
                 onClick={handleGetBasic}
-              > 
+              >
                 {isSignedIn ? "Selected" : "Sign in for Basic"}
               </Button>
             </Box>
           </Grid>
 
-          <Grid item xs={12} md={5.5} sx={{display:'flex', justifyContent:'center'}}>
+          <Grid item xs={12} md={5.5} sx={{ display: 'flex', justifyContent: 'center' }}>
             <Box
               spacing={3}
               sx={{
@@ -232,13 +235,13 @@ export default function Home() {
                 {' '}
                 Unlimited storage, latest updates, and priority support.
               </Typography>
-              <Button 
-                variant="contained" 
-                color="primary" 
-                onClick={isSignedIn ? handleGetPro : handleGetBasic} 
-                sx={{mt:2}}
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={isSignedIn ? handleGetPro : handleGetBasic}
+                sx={{ mt: 2 }}
                 disabled={isSignedIn && isProUser}
-              > 
+              >
                 {!isSignedIn ? "Sign in to get Pro" : isProUser ? "Pro Selected" : "Choose Pro"}
               </Button>
             </Box>
