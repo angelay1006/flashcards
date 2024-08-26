@@ -24,7 +24,7 @@ export default function About() {
                 <Grid item xs={12} md={6} sx={{ paddingTop: 0 }}>
                     <Typography variant="subtitle1" gutterBottom sx={{ paddingTop: 0, margin: 0 }}>
                         Welcome to Qwizzcards, your go-to platform for generating AI-powered flashcards from any text.
-                        Whether you're a student preparing for exams, a professional brushing up on skills, or simply someone
+                        Whether you&apos;re a student preparing for exams, a professional brushing up on skills, or simply someone
                         who enjoys learning new things, Qwizzcards is designed to make studying easier and more efficient.
                         With just a few clicks, convert any information into concise, easy-to-review flashcards that you can
                         access from any device, anytime.
