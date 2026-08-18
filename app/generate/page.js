@@ -3,7 +3,7 @@
 import {useUser} from '@clerk/nextjs';
 import {useState, useEffect} from 'react';
 import {useRouter} from 'next/navigation';
-import {Container, CardContent, CardActionArea, Dialog, DialogTitle, DialogActions, DialogContent, Button, Box, Typography, Paper, TextField, Grid, DialogContentText } from '@mui/material';
+import {Container, CardContent, CardActionArea, Dialog, DialogTitle, DialogActions, DialogContent, Button, Box, Typography, Paper, TextField, Grid, DialogContentText, Alert } from '@mui/material';
 import {doc, getDoc, collection, writeBatch} from 'firebase/firestore';
 import LinearProgress from '@mui/material/LinearProgress';
 import {db} from '../../firebase';
@@ -20,6 +20,8 @@ export default function Generate() {
     const router = useRouter();
     // for loading animation
     const [isLoading, setIsLoading] = useState(false);
+    // holds a user-facing message when generation fails
+    const [error, setError] = useState('');
     // for distinguishing basic and pro
     const [isLimitReached, setIsLimitReached] = useState(false);
     const [collectionCount, setCollectionCount] = useState(0);
@@ -48,19 +50,41 @@ export default function Generate() {
 
     // submits the text to generate flashcards. sends to API
     const handleSubmit = async () => {
+        if (!text.trim()) {
+            setError('Please enter a topic or some notes first.');
+            return
+        }
+
         setIsLoading(true); // Start loading
-        fetch('api/generate', {
-            method: 'POST',
-            body: text,
-        })
-            .then((res) => res.json())
-            .then((data) => {
-                setFlashcards(data);
-                setIsLoading(false); // Stop loading after data is received
+        setError(''); // clear any error from a previous attempt
+        setFlashcards([]);
+
+        try {
+            const res = await fetch('api/generate', {
+                method: 'POST',
+                body: text,
             })
-            .catch(() => {
-                setIsLoading(false); // in case of error, stop loading
-            })
+
+            // The route returns {error: string} on failure, so read the body either way.
+            const data = await res.json().catch(() => null);
+
+            if (!res.ok) {
+                setError(data?.error || 'Failed to generate flashcards. Please try again.');
+                return
+            }
+
+            if (!Array.isArray(data)) {
+                setError('Received an unexpected response from the server. Please try again.');
+                return
+            }
+
+            setFlashcards(data);
+        } catch {
+            // fetch itself failed (offline, server down)
+            setError('Could not reach the server. Check your connection and try again.');
+        } finally {
+            setIsLoading(false); // stop loading whatever the outcome
+        }
     }
 
     const handleCardClick = (id) => {
@@ -159,6 +183,11 @@ export default function Generate() {
                             </Button>
                         )}
                     </Box>
+                    {error && (
+                        <Alert severity="error" sx={{mt: 2}} onClose={() => setError('')}>
+                            {error}
+                        </Alert>
+                    )}
                 </Paper>
             </Box>
 
